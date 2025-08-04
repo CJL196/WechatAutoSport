@@ -64,8 +64,8 @@ def main():
         if step < 0:
             print("❌ 步数不能为负数")
             sys.exit(1)
-        if step > 100000:
-            print("❌ 步数不能超过100000")
+        if step > 98800:
+            print("❌ 步数不能超过98800")
             sys.exit(1)
     except ValueError:
         print("❌ 请输入有效的数字")

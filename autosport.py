@@ -41,6 +41,30 @@ def linear_interpolation(x, x1, y1, x2, y2):
         return y1
     return y1 + (y2 - y1) * (x - x1) / (x2 - x1)
 
+def generate_daily_target_steps(base_total_step, delta):
+    """
+    生成每日随机化的目标步数
+    
+    Args:
+        base_total_step: 基础目标步数
+        delta: 随机偏差系数 (0-1之间的值)
+    
+    Returns:
+        int: 随机化后的每日目标步数
+    """
+    # 使用正态分布生成随机偏差，范围大约在 ±delta*base_total_step 之间
+    random_deviation = random.gauss(0, delta * base_total_step * 0.3)
+    
+    # 计算随机化后的目标步数
+    randomized_total_step = base_total_step + random_deviation
+    
+    # 确保步数在合理范围内 (至少为基础值的50%，最多为基础值的150%)
+    min_steps = int(base_total_step * 0.5)
+    max_steps = int(base_total_step * 1.5)
+    randomized_total_step = max(min_steps, min(max_steps, randomized_total_step))
+    
+    return int(randomized_total_step)
+
 def calculate_steps_for_day(total_step, delta):
     """
     计算一天中每一分钟的步数
@@ -155,9 +179,12 @@ def main():
     # 读取配置
     total_step = int(os.getenv('total_step', 7000))
     delta = float(os.getenv('delta', 0.2))
+    base_url = os.getenv('base_url', 'https://clound.gjshou.top/')
     
-    print(f"🎯 每日目标步数: {total_step}")
+    print(f"🎯 基础目标步数: {total_step}")
     print(f"🎲 随机偏差系数: {delta}")
+    print(f"📊 每日实际目标将在基础值的50%-150%范围内随机变化")
+    print(f"🌐 API地址: {base_url}")
     
     # 加载用户凭证
     try:
@@ -168,12 +195,14 @@ def main():
     
     # 计算今天的步数计划
     print("📅 正在生成今天的步数计划...")
-    steps_dict = calculate_steps_for_day(total_step, delta)
+    daily_target_step = generate_daily_target_steps(total_step, delta)
+    print(f"🎯 今日随机化目标步数: {daily_target_step}")
+    steps_dict = calculate_steps_for_day(daily_target_step, delta)
     
     # 如果是dryrun模式，绘制图表并退出
     if args.dryrun:
         print("📊 正在绘制步数计划图表...")
-        plot_steps(steps_dict, total_step)
+        plot_steps(steps_dict, daily_target_step)
         print("✅ 图表显示完成，程序退出")
         return
     
@@ -199,7 +228,9 @@ def main():
             if datetime.now().date() > today:
                 # 重新生成步数计划
                 print("📆 新的一天开始，重新生成步数计划...")
-                steps_dict = calculate_steps_for_day(total_step, delta)
+                daily_target_step = generate_daily_target_steps(total_step, delta)
+                print(f"🎯 今日随机化目标步数: {daily_target_step}")
+                steps_dict = calculate_steps_for_day(daily_target_step, delta)
                 today = datetime.now().date()
             
             # 获取当前应该设置的步数

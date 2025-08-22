@@ -7,49 +7,8 @@
 
 import os
 import sys
-import requests
-from utils import load_credentials
-
-
-def set_step(user, password, step):
-    """
-    设置微信运动步数
-    
-    Args:
-        user (str): 用户名/邮箱
-        password (str): 密码
-        step (int): 步数
-    
-    Returns:
-        bool: 是否设置成功
-    """
-    url = "https://ydapi.datu520.com/"
-    
-    data = {
-        'user': user,
-        'password': password,
-        'step': str(step)
-    }
-    
-    try:
-        print(f"正在为用户 {user} 设置步数: {step}")
-        response = requests.post(url, data=data, timeout=30)
-        
-        if response.status_code == 200:
-            print(f"✅ 步数设置成功！当前步数: {step}")
-            print(f"响应内容: {response.text}")
-            return True
-        else:
-            print(f"❌ 设置失败，HTTP状态码: {response.status_code}")
-            print(f"响应内容: {response.text}")
-            return False
-            
-    except requests.exceptions.RequestException as e:
-        print(f"❌ 网络请求失败: {e}")
-        return False
-    except Exception as e:
-        print(f"❌ 发生错误: {e}")
-        return False
+from dotenv import load_dotenv
+from utils import load_credentials, set_step
 
 
 def main():
@@ -72,8 +31,18 @@ def main():
         sys.exit(1)
     
     try:
+        # 加载环境变量
+        load_dotenv()
+        
+        # 显示当前配置
+        base_url = os.getenv('base_url', 'https://clound.gjshou.top/')
+        print(f"🌐 使用API地址: {base_url}")
+        
         # 从.env文件加载用户名和密码
         user, password = load_credentials()
+        
+        print(f"👤 用户: {user}")
+        print(f"🎯 目标步数: {step}")
         
         # 设置步数
         success = set_step(user, password, step)

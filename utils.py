@@ -28,7 +28,14 @@ def set_step(user, password, step):
     Returns:
         bool: 是否设置成功
     """
-    url = "https://ydapi.datu520.com/"
+    # 从环境变量读取base_url，默认使用新的API地址
+    base_url = os.getenv('base_url', 'https://clound.gjshou.top/')
+    
+    # 确保URL以/结尾
+    if not base_url.endswith('/'):
+        base_url += '/'
+    
+    url = base_url
     
     data = {
         'user': user,

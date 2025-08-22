@@ -10,11 +10,13 @@
 
 工具通过调用 Zepp 的步数更新 API 来实现步数修改：
 ```
-curl -X POST https://ydapi.datu520.com/ \
+curl -X POST https://clound.gjshou.top/ \
   -d "user=xxx" \
   -d "password=xxx" \
   -d "step=10000"
 ```
+
+**注意**：API地址可能会变更，如果遇到无法连接的情况，请通过配置文件更新API地址。
 
 ## 使用教程
 
@@ -45,12 +47,24 @@ curl -X POST https://ydapi.datu520.com/ \
 
 ## 自定义配置文件 (.env)
 
+将 `env.example` 文件复制为 `.env` 并填入你的信息：
+
+```bash
+cp env.example .env
+```
+
+配置文件示例：
 ```
 email=你的邮箱
 password=你的密码
-total_step=7000    # 每日目标步数，默认7000
-delta=0.2          # 随机偏差系数，默认0.2
+total_step=7000                      # 每日目标步数，默认7000
+delta=0.2                           # 随机偏差系数，默认0.2
+base_url=https://clound.gjshou.top/ # API地址，可根据需要更改，默认为新地址
 ```
+
+**配置说明**：
+- `base_url`：如果API地址发生变更，可以通过修改此项来更新API地址
+- 当前API地址：`https://clound.gjshou.top/`（默认值）
 
 ## 时间表
 
@@ -134,4 +148,5 @@ python autosport.py --dryrun
 
 - `total_step`: 每日目标步数，默认值为 7000
 - `delta`: 随机偏差系数，控制步数的随机性，默认值为 0.2（即±20%的偏差）
+- `base_url`: API服务器地址，默认值为 `https://clound.gjshou.top/`，如果API地址变更可以修改此项
 

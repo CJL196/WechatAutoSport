@@ -35,7 +35,7 @@ def main():
         load_dotenv()
         
         # 显示当前配置
-        base_url = os.getenv('base_url', 'https://clound.gjshou.top/')
+        base_url = os.getenv('api_url', 'https://wzz.wangzouzou.com/motion/api/motion/Xiaomi')
         print(f"🌐 使用API地址: {base_url}")
         
         # 从.env文件加载用户名和密码
@@ -45,7 +45,8 @@ def main():
         print(f"🎯 目标步数: {step}")
         
         # 设置步数
-        success = set_step(user, password, step)
+        success, info = set_step(user, password, step)
+        print(f"🧾 响应: {info}")
         
         if success:
             sys.exit(0)

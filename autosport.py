@@ -179,12 +179,12 @@ def main():
     # 读取配置
     total_step = int(os.getenv('total_step', 7000))
     delta = float(os.getenv('delta', 0.2))
-    base_url = os.getenv('base_url', 'https://clound.gjshou.top/')
+    api_url = os.getenv('api_url', 'https://wzz.wangzouzou.com/motion/api/motion/Xiaomi')
     
     print(f"🎯 基础目标步数: {total_step}")
     print(f"🎲 随机偏差系数: {delta}")
     print(f"📊 每日实际目标将在基础值的50%-150%范围内随机变化")
-    print(f"🌐 API地址: {base_url}")
+    print(f"🌐 API地址: {api_url}")
     
     # 加载用户凭证
     try:
@@ -219,6 +219,9 @@ def main():
     # 记录今天的日期
     today = datetime.now().date()
     
+    # 记录上次成功设置的步数，用于去重
+    last_set_step = None
+    
     print("🏃 自动更新开始运行...")
     print("按 Ctrl+C 停止程序")
     
@@ -232,24 +235,31 @@ def main():
                 print(f"🎯 今日随机化目标步数: {daily_target_step}")
                 steps_dict = calculate_steps_for_day(daily_target_step, delta)
                 today = datetime.now().date()
+                # 新的一天重置 last_set_step
+                last_set_step = None
             
             # 获取当前应该设置的步数
             current_step = get_current_step(steps_dict, datetime.now())
             
-            # 更新步数
-            print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 当前步数: {current_step}")
+            # 如果步数未变化则跳过
+            if last_set_step is not None and current_step == last_set_step:
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 当前步数: {current_step}（未变化，跳过更新）")
+            else:
+                print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 当前步数: {current_step}")
+                success, info = set_step(user, password, current_step)
+                print(f"🧾 响应: {info}")
+                if success:
+                    last_set_step = current_step
+                else:
+                    print("⚠️  步数设置失败，请检查网络连接和账户信息")
             
-            # 实际调用API设置步数
-            success = set_step(user, password, current_step)
-            if not success:
-                print("⚠️  步数设置失败，请检查网络连接和账户信息")
+            # 将间隔调整为 16 分钟
+            next_update += timedelta(minutes=16)
             
-            # 等待到下一个分钟
-            next_update += timedelta(minutes=1)
             # 确保等待时间是未来的
             now = datetime.now()
             if next_update < now:
-                next_update = now.replace(second=0, microsecond=0) + timedelta(minutes=1)
+                next_update = now.replace(second=0, microsecond=0) + timedelta(minutes=16)
             
             # 计算睡眠时间
             sleep_time = (next_update - now).total_seconds()

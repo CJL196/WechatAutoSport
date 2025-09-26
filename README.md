@@ -1,5 +1,7 @@
 # 微信运动步数自动更新工具
 
+> 声明：本项目仅用于学习交流，如本项目内容涉及您的权益，请联系我，我将立即删除相关内容。
+
 ## 功能说明
 
 这个工具可以修改和自动更新微信运动步数，模拟一天中真实的运动。
@@ -10,13 +12,15 @@
 
 工具通过调用 Zepp 的步数更新 API 来实现步数修改：
 ```
-curl -X POST https://clound.gjshou.top/ \
-  -d "user=xxx" \
-  -d "password=xxx" \
-  -d "step=10000"
+curl -X POST "https://wzz.wangzouzou.com/motion/api/motion/Xiaomi" \
+  -H "Origin: https://m.cqzz.top" \
+  -H "Referer: https://m.cqzz.top/" \
+  -H "User-Agent: Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36" \
+  -H "Content-Type: application/x-www-form-urlencoded; charset=UTF-8" \
+  --data "phone=xxx&pwd=xxx&num=10000"
 ```
 
-**注意**：API地址可能会变更，如果遇到无法连接的情况，请通过配置文件更新API地址。
+**注意**：API地址可能会变更，如果遇到无法连接的情况，请通过配置文件的 `api_url` 更新API地址。
 
 ## 使用教程
 
@@ -59,12 +63,12 @@ email=你的邮箱
 password=你的密码
 total_step=7000                      # 每日目标步数，默认7000
 delta=0.2                           # 随机偏差系数，默认0.2
-base_url=https://clound.gjshou.top/ # API地址，可根据需要更改，默认为新地址
+api_url=https://wzz.wangzouzou.com/motion/api/motion/Xiaomi # API地址，可根据需要更改，默认为当前可用地址
 ```
 
 **配置说明**：
-- `base_url`：如果API地址发生变更，可以通过修改此项来更新API地址
-- 当前API地址：`https://clound.gjshou.top/`（默认值）
+- `api_url`：如果API地址发生变更，可以通过修改此项来更新API地址
+- 当前API地址：`https://wzz.wangzouzou.com/motion/api/motion/Xiaomi`（默认值）
 
 ## 时间表
 
@@ -111,7 +115,8 @@ python autosport.py
 - 根据时间表自动计算预期步数
 - 为每分钟生成随机步数计划（添加随机性使步数更自然）
 - 确保步数只增不减
-- 每分钟检查一次并更新
+- 每16分钟检查一次并更新
+- 当应设置的步数与上次相同，将跳过更新
 - 每天0点重新生成随机步数计划
 
 按 `Ctrl+C` 停止自动更新。
@@ -141,12 +146,12 @@ python autosport.py --dryrun
 2. 根据时间表计算一天中每分钟的预期步数
 3. 为每分钟的步数添加随机负偏差（由 `delta` 参数控制）
 4. 确保步数只增不减
-5. 每分钟检查当前时间并更新相应的步数
+5. 每16分钟检查当前时间并更新相应的步数
 6. 每天0点重新生成随机步数计划
 
 ## 参数说明
 
 - `total_step`: 每日目标步数，默认值为 7000
 - `delta`: 随机偏差系数，控制步数的随机性，默认值为 0.2（即±20%的偏差）
-- `base_url`: API服务器地址，默认值为 `https://clound.gjshou.top/`，如果API地址变更可以修改此项
+- `api_url`: API服务器地址，默认值为 `https://wzz.wangzouzou.com/motion/api/motion/Xiaomi`，如果API地址变更可以修改此项
 

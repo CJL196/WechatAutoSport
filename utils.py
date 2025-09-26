@@ -26,36 +26,59 @@ def set_step(user, password, step):
         step (int): 步数
     
     Returns:
-        bool: 是否设置成功
+        tuple[bool, dict]: (是否设置成功, 网站返回的信息字典)
     """
-    # 从环境变量读取base_url，默认使用新的API地址
-    base_url = os.getenv('base_url', 'https://clound.gjshou.top/')
+    # 从环境变量读取 api_url，默认使用新的 API 地址
+    url = os.getenv('api_url', 'https://wzz.wangzouzou.com/motion/api/motion/Xiaomi')
     
-    # 确保URL以/结尾
-    if not base_url.endswith('/'):
-        base_url += '/'
-    
-    url = base_url
+    headers = {
+        'Origin': 'https://m.cqzz.top',
+        'Referer': 'https://m.cqzz.top/',
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    }
     
     data = {
-        'user': user,
-        'password': password,
-        'step': str(step)
+        'phone': user,
+        'pwd': password,
+        'num': str(step)
     }
     
     try:
-        response = requests.post(url, data=data, timeout=30)
+        response = requests.post(url, headers=headers, data=data, timeout=30)
         
-        if response.status_code == 200:
-            return True
+        # 尝试解析为 JSON；若失败则构造统一的字典
+        try:
+            parsed = response.json()
+        except ValueError:
+            parsed = {
+                'code': response.status_code,
+                'msg': 'non_json_response',
+                'data': response.text
+            }
+        
+        if not isinstance(parsed, dict):
+            parsed = {
+                'code': response.status_code,
+                'msg': 'ok' if response.ok else 'http_error',
+                'data': parsed
+            }
+        
+        # 根据常见字段或 HTTP 状态码判断成功与否
+        success = False
+        code_value = parsed.get('code') if isinstance(parsed, dict) else None
+        if isinstance(code_value, int):
+            success = (code_value == 200)
+        elif isinstance(code_value, str):
+            success = (code_value == '200')
+        elif isinstance(parsed, dict) and 'success' in parsed:
+            success = bool(parsed.get('success'))
         else:
-            print(f"❌ 设置失败，HTTP状态码: {response.status_code}")
-            print(f"响应内容: {response.text}")
-            return False
+            success = (response.status_code == 200)
+        
+        return success, parsed
             
     except requests.exceptions.RequestException as e:
-        print(f"❌ 网络请求失败: {e}")
-        return False
+        return False, {'code': -1, 'msg': 'network_error', 'data': str(e)}
     except Exception as e:
-        print(f"❌ 发生错误: {e}")
-        return False
+        return False, {'code': -2, 'msg': 'unexpected_error', 'data': str(e)}
